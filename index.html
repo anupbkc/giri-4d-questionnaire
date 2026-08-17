@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0D1117">
+<title>4D Self-Assessment — GIRI</title>
+<style>
+  :root{
+    --bg:#0D1117; --panel:#0F1922; --card:#1E2D3A; --line:#2E3D4A;
+    --ink:#EDE8DC; --dim:#7A8FA6; --teal:#1A9BA6; --teal-lite:#2ECAD6;
+    --body:#C97060; --mind:#6090C9; --wealth:#72B890; --spirit:#C9A84C;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:Georgia,'Times New Roman',serif;background:var(--bg);color:var(--ink);min-height:100vh;line-height:1.55}
+  .sans{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif}
+
+  /* ---------- layout ---------- */
+  .wrap{max-width:820px;margin:0 auto;padding:20px 16px 64px}
+  .hidden{display:none !important}
+
+  header.top{background:var(--panel);border-bottom:1px solid var(--line);padding:18px 16px}
+  header.top .inner{max-width:820px;margin:0 auto}
+  header.top h1{font-size:11px;color:var(--teal);letter-spacing:3px;text-transform:uppercase;font-family:Arial,sans-serif;margin-bottom:6px}
+  header.top h2{font-size:22px;color:#fff}
+  header.top p{font-size:12px;color:var(--dim);margin-top:4px;font-family:Arial,sans-serif;letter-spacing:1px}
+
+  /* ---------- gate ---------- */
+  .gate{max-width:420px;margin:0 auto;padding:56px 20px;text-align:center}
+  .gate .seal{width:74px;height:74px;margin:0 auto 22px;border-radius:50%;border:1px solid var(--teal);
+    display:flex;align-items:center;justify-content:center;color:var(--teal);font-size:18px;letter-spacing:2px}
+  .gate h3{font-size:21px;margin-bottom:8px}
+  .gate p{font-size:14px;color:var(--dim);margin-bottom:26px}
+  .gate input{width:100%;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    border-radius:8px;padding:15px;font-size:17px;text-align:center;letter-spacing:2px;font-family:Arial,sans-serif}
+  .gate input:focus{outline:none;border-color:var(--teal)}
+  .gate .err{color:var(--body);font-size:13px;margin-top:12px;min-height:18px;font-family:Arial,sans-serif}
+
+  /* ---------- progress ---------- */
+  .progress{position:sticky;top:0;z-index:20;background:rgba(13,17,23,.94);backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);padding:9px 16px}
+  .progress .inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:12px}
+  .progress span{font-size:11px;color:var(--dim);font-family:Arial,sans-serif;letter-spacing:1px;white-space:nowrap}
+  .ptrack{flex:1;height:5px;background:var(--card);border-radius:3px;overflow:hidden}
+  .pfill{height:100%;width:0;background:var(--teal);border-radius:3px;transition:width .3s}
+
+  /* ---------- blocks ---------- */
+  .section-title{font-size:11px;letter-spacing:3px;text-transform:uppercase;font-family:Arial,sans-serif;
+    margin:34px 0 14px;padding-bottom:8px;border-bottom:2px solid currentColor}
+  .intro{font-size:14px;color:var(--dim);margin:-6px 0 16px}
+  .dim-body{color:var(--body)} .dim-mind{color:var(--mind)}
+  .dim-wealth{color:var(--wealth)} .dim-spirit{color:var(--spirit)}
+
+  .q{background:var(--card);border-radius:10px;padding:16px;margin-bottom:12px;border:1px solid transparent}
+  .q.miss{border-color:var(--body)}
+  .q .qh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .q label.title{font-size:16px;color:var(--ink);font-weight:bold;display:block}
+  .q .val{font-family:Arial,sans-serif;font-size:13px;color:var(--dim);min-width:34px;text-align:right}
+  .q .sub{font-size:12.5px;color:var(--dim);margin:5px 0 13px;font-style:italic;font-family:Arial,sans-serif}
+
+  .scale{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+  .scale input{position:absolute;opacity:0;pointer-events:none}
+  .scale label{aspect-ratio:1/1;border-radius:50%;border:1px solid var(--line);background:var(--bg);
+    display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--dim);
+    cursor:pointer;font-family:Arial,sans-serif;transition:transform .12s,background .15s}
+  .scale label:active{transform:scale(.9)}
+  /* invisible padding so small circles still give a ~44px finger target */
+  .scale label{position:relative}
+  .scale label::after{content:'';position:absolute;left:-2px;right:-2px;top:-9px;bottom:-9px}
+  .scale input:checked + label{color:#fff;font-weight:bold}
+  .dim-body .scale input:checked + label{background:var(--body);border-color:var(--body)}
+  .dim-mind .scale input:checked + label{background:var(--mind);border-color:var(--mind)}
+  .dim-wealth .scale input:checked + label{background:var(--wealth);border-color:var(--wealth)}
+  .dim-spirit .scale input:checked + label{background:var(--spirit);border-color:var(--spirit)}
+  .ends{display:flex;justify-content:space-between;margin-top:7px;font-size:10.5px;color:#55697d;
+    font-family:Arial,sans-serif;letter-spacing:1px;text-transform:uppercase}
+
+  .text-input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:8px;
+    padding:11px 13px;font-size:15px;font-family:Arial,sans-serif;resize:vertical;min-height:64px;margin-top:6px}
+  .text-input:focus{outline:none;border-color:var(--teal)}
+  .one-line{min-height:auto;height:46px}
+
+  .btn{background:var(--teal);color:#fff;border:none;padding:15px 24px;font-size:14px;font-weight:bold;
+    letter-spacing:1.5px;text-transform:uppercase;border-radius:8px;cursor:pointer;margin-top:22px;width:100%;
+    font-family:Arial,sans-serif}
+  .btn:active{transform:scale(.99)}
+  .btn.gold{background:var(--spirit);color:#14100a}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--dim)}
+  .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:480px){.btn-row{grid-template-columns:1fr}}
+
+  .note{font-size:12px;color:var(--dim);font-family:Arial,sans-serif;text-align:center;margin-top:10px}
+
+  /* ---------- results ---------- */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:18px}
+  .card h3{font-size:19px;color:#fff;margin-bottom:4px}
+  .card h4{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--teal);
+    font-family:Arial,sans-serif;margin-bottom:12px}
+  .card p{font-size:15px;margin-bottom:10px}
+  .card p:last-child{margin-bottom:0}
+
+  .score-bar{margin-bottom:13px}
+  .score-bar .lab{display:flex;justify-content:space-between;margin-bottom:5px;font-family:Arial,sans-serif}
+  .score-bar .lab b{font-size:11.5px;letter-spacing:2px;text-transform:uppercase}
+  .score-bar .lab span{font-size:11.5px;color:var(--dim)}
+  .bar-bg{height:9px;background:var(--card);border-radius:5px}
+  .bar-fill{height:9px;border-radius:5px;width:0;transition:width .7s ease}
+
+  .edge{border-left:3px solid var(--teal);background:var(--card);border-radius:0 10px 10px 0;padding:15px 17px;margin-top:16px}
+  .edge .tag{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--teal);font-family:Arial,sans-serif}
+  .edge .big{font-size:26px;margin:5px 0 8px}
+  .edge p{font-size:15px}
+
+  details.pillar{background:var(--card);border-radius:10px;margin-bottom:10px;overflow:hidden}
+  details.pillar summary{padding:14px 16px;cursor:pointer;list-style:none;display:flex;
+    justify-content:space-between;align-items:center;gap:10px}
+  details.pillar summary::-webkit-details-marker{display:none}
+  details.pillar summary .nm{font-size:14px;letter-spacing:2px;text-transform:uppercase;font-family:Arial,sans-serif}
+  details.pillar summary .sc{font-size:12px;color:var(--dim);font-family:Arial,sans-serif}
+  details.pillar .body{padding:0 16px 16px}
+  details.pillar .band{display:inline-block;font-size:10px;letter-spacing:2px;text-transform:uppercase;
+    font-family:Arial,sans-serif;border:1px solid currentColor;border-radius:20px;padding:3px 10px;margin-bottom:10px}
+  details.pillar p{font-size:14.5px;color:var(--ink);margin-bottom:12px}
+  details.pillar ul{margin:0 0 4px 18px}
+  details.pillar li{font-size:14px;margin-bottom:8px}
+  details.pillar .lead{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);
+    font-family:Arial,sans-serif;margin-bottom:8px}
+
+  .action-item{margin-bottom:13px}
+  .action-item label{font-size:12.5px;color:var(--dim);display:block;margin-bottom:5px;
+    font-family:Arial,sans-serif;letter-spacing:1px}
+  .action-item input{width:100%;background:var(--card);border:1px solid var(--line);color:var(--ink);
+    border-radius:8px;padding:12px 13px;font-size:15px;font-family:Arial,sans-serif}
+  .action-item input:focus{outline:none;border-color:var(--spirit)}
+
+  .talk{counter-reset:t}
+  .talk li{font-size:15px;margin:0 0 12px 18px}
+  .talk li b{color:var(--teal-lite)}
+  .round{background:var(--card);border-radius:9px;padding:13px 15px;margin-bottom:9px}
+  .round .n{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--spirit);
+    font-family:Arial,sans-serif;margin-bottom:4px}
+  .round p{font-size:14.5px;margin:0}
+
+  footer.giri{text-align:center;padding:30px 16px 40px;color:#3A4A5A;font-size:11px;
+    font-family:Arial,sans-serif;letter-spacing:1px;line-height:1.8}
+
+  /* ---------- print ---------- */
+  @media print{
+    body{background:#fff;color:#000}
+    .progress,.btn,.btn-row,#formScreen,.note,header.top{display:none !important}
+    .card,.round,details.pillar,.edge{background:#fff;border:1px solid #999;color:#000;page-break-inside:avoid}
+    .card h3,.edge .big{color:#000}
+    details.pillar p,details.pillar li,.card p{color:#000}
+    details[open] .body{display:block}
+    .wrap{max-width:100%;padding:0}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= GATE ================= -->
+<div id="gateScreen">
+  <div class="gate">
+    <div class="seal sans">4D</div>
+    <h1 class="sans" style="font-size:11px;color:var(--teal);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px">
+      GIRI · Gayatri Interdisciplinary Research Institute</h1>
+    <h3>Knowing Your Personal Self</h3>
+    <p class="sans">4D Self-Assessment · Body · Mind · Wealth · Spirit<br>Enter the seminar password to begin.</p>
+    <input id="pw" type="password" inputmode="text" autocomplete="off" autocapitalize="none"
+           spellcheck="false" placeholder="seminar password">
+    <div class="err sans" id="pwErr"></div>
+    <button class="btn" onclick="unlock()">Enter</button>
+    <p class="note">Your answers stay on your own phone. Nothing is uploaded.</p>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app" class="hidden">
+
+  <header class="top">
+    <div class="inner">
+      <h1>GIRI · Gayatri Interdisciplinary Research Institute</h1>
+      <h2>Knowing Your Personal Self</h2>
+      <p>4D SELF-ASSESSMENT · BODY · MIND · WEALTH · SPIRIT</p>
+    </div>
+  </header>
+
+  <div class="progress" id="progress">
+    <div class="inner">
+      <span id="pText" class="sans">0 / 12 answered</span>
+      <div class="ptrack"><div class="pfill" id="pFill"></div></div>
+    </div>
+  </div>
+
+  <!-- ---------- FORM ---------- -->
+  <div class="wrap" id="formScreen">
+
+    <div class="q" style="margin-top:8px">
+      <label class="title">Your name</label>
+      <div class="sub">Used only on your own result sheet.</div>
+      <input id="userName" class="text-input one-line" placeholder="Name">
+    </div>
+
+    <!-- PART 1 -->
+    <div class="section-title" style="color:var(--teal)">Part 1 · Opening Reflection</div>
+    <p class="intro sans">Take one slow breath first. Answer honestly and quickly — there are no right answers.</p>
+    <div class="q">
+      <label class="title">Who am I, beyond my name and my role?</label>
+      <textarea id="r1" class="text-input"></textarea>
+    </div>
+    <div class="q">
+      <label class="title">What do I value most in life?</label>
+      <textarea id="r2" class="text-input"></textarea>
+    </div>
+    <div class="q">
+      <label class="title">What lights me up — what makes me feel most alive?</label>
+      <textarea id="r3" class="text-input"></textarea>
+    </div>
+
+    <!-- PART 2 -->
+    <div class="section-title" style="color:var(--teal)">Part 2 · The 4D Self-Assessment</div>
+    <p class="intro sans">Rate yourself 1 (very low) to 10 (excellent). Be honest — this is for you, not for marks.</p>
+    <div id="questions"></div>
+
+    <!-- PART 3 -->
+    <div class="section-title" style="color:var(--teal)">Part 3 · Five Lenses of Self-Knowledge</div>
+    <p class="intro sans">Write your first honest answer. Speed matters more than perfection here.</p>
+    <div class="q">
+      <label class="title">Strengths</label>
+      <div class="sub">What do I do better than most people around me?</div>
+      <textarea id="strengths" class="text-input" placeholder="1.  2.  3."></textarea>
+    </div>
+    <div class="q">
+      <label class="title">Values</label>
+      <div class="sub">What principles do I refuse to compromise on?</div>
+      <textarea id="values" class="text-input" placeholder="e.g. honesty, growth, freedom..."></textarea>
+    </div>
+    <div class="q">
+      <label class="title">Interests</label>
+      <div class="sub">What topics or activities do I return to again and again, naturally?</div>
+      <textarea id="interests" class="text-input"></textarea>
+    </div>
+    <div class="q">
+      <label class="title">Personality</label>
+      <div class="sub">When I am at my best, how do I naturally show up in the world?</div>
+      <textarea id="personality" class="text-input"></textarea>
+    </div>
+    <div class="q">
+      <label class="title">Skills</label>
+      <div class="sub">What specific things can I do well — trained or learned abilities?</div>
+      <textarea id="skills" class="text-input"></textarea>
+    </div>
+
+    <button class="btn" onclick="showResults()">See my 4D profile</button>
+    <p class="note" id="formNote">All 12 scores are needed for your analysis.</p>
+  </div>
+
+  <!-- ---------- RESULTS ---------- -->
+  <div class="wrap hidden" id="resultsScreen">
+
+    <div class="card">
+      <h3 id="resTitle">Your 4D Self Profile</h3>
+      <p class="sans" style="font-size:12px;color:var(--dim)" id="resDate"></p>
+      <div style="text-align:center;margin:18px 0 6px"><svg id="radar" viewBox="0 0 300 300" width="100%" style="max-width:300px"></svg></div>
+      <div id="scoreDisplay" style="margin-top:14px"></div>
+      <p class="sans" style="font-size:13px;color:var(--dim);margin-top:14px" id="totalLine"></p>
+    </div>
+
+    <div class="card">
+      <h4>Analysis · What your scores are saying</h4>
+      <div class="edge" id="growthEdge"></div>
+      <div id="readOut" style="margin-top:16px"></div>
+    </div>
+
+    <div class="card">
+      <h4>Pillar by pillar · Analysis &amp; how to improve</h4>
+      <p class="sans" style="font-size:13px;color:var(--dim);margin-bottom:14px">
+        Your weakest pillar is opened first. Tap any pillar to read its analysis and improvement steps.</p>
+      <div id="pillars"></div>
+    </div>
+
+    <div class="card">
+      <h4>My 30-day personal action map</h4>
+      <p class="sans" style="font-size:13px;color:var(--dim);margin-bottom:14px">
+        One specific, small, daily-sized action per pillar. Start with your growth edge.</p>
+      <div class="action-item"><label>BODY — one physical action I commit to</label>
+        <input id="actionBody" placeholder="e.g. Walk 20 minutes every morning before my phone"></div>
+      <div class="action-item"><label>MIND — one thinking or learning habit I will build</label>
+        <input id="actionMind" placeholder="e.g. Read 15 minutes before sleeping"></div>
+      <div class="action-item"><label>WEALTH — one step toward my material growth</label>
+        <input id="actionWealth" placeholder="e.g. Write down every rupee I spend for 30 days"></div>
+      <div class="action-item"><label>SPIRIT — one act of alignment with my values</label>
+        <input id="actionSpirit" placeholder="e.g. 5 minutes of journalling each morning"></div>
+    </div>
+
+    <div class="card">
+      <h4>Discuss with your group</h4>
+      <p class="sans" style="font-size:13px;color:var(--dim);margin-bottom:14px">
+        Form a circle of 3. Twelve minutes total — four minutes each. One person speaks, the other two only
+        listen and then reflect back. No advice unless it is asked for.</p>
+      <div class="round"><div class="n">Round 1 · 90 seconds each</div>
+        <p>Say your growth edge out loud and one honest sentence about why you think it scored lowest.</p></div>
+      <div class="round"><div class="n">Round 2 · 60 seconds each</div>
+        <p>Your listeners reflect back: "What I heard is…" — no fixing, no judging. Just repeat what you heard.</p></div>
+      <div class="round"><div class="n">Round 3 · 90 seconds each</div>
+        <p>State your one 30-day action out loud. Your group writes it down and picks a date to ask you about it.</p></div>
+
+      <div style="margin-top:18px">
+        <div class="sans" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--spirit);margin-bottom:10px">
+          Questions for your table</div>
+        <ol class="talk" id="talkList"></ol>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>Keep your result</h4>
+      <div class="btn-row">
+        <button class="btn gold" style="margin-top:0" onclick="window.print()">Save as PDF / Print</button>
+        <button class="btn ghost" style="margin-top:0" onclick="copySummary()">Copy summary text</button>
+      </div>
+      <div class="btn-row" style="margin-top:10px">
+        <button class="btn ghost" style="margin-top:0" onclick="saveProfile()">Download JSON</button>
+        <button class="btn ghost" style="margin-top:0" onclick="backToForm()">Back &amp; edit answers</button>
+      </div>
+      <p class="note" id="copyNote"></p>
+    </div>
+  </div>
+
+  <footer class="giri">
+    GIRI · Gayatri Interdisciplinary Research Institute · Kathmandu, Nepal<br>
+    4D Self Framework developed by Er. Anup KC<br>
+    Global Youth Mobilization · Atom Launchpad · Texas Int'l Education Network
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   GIRI 4D Self-Assessment
+   Framework: Er. Anup KC · Gayatri Interdisciplinary Research Institute
+   ============================================================ */
+
+const PASS = atob('a2F0aG1hbmR1MTIz');   // soft seminar gate, not security
+
+const DIMS = [
+  { key:'body',   label:'BODY',   sub:'Physical Self',     color:'#C97060', cls:'dim-body',
+    questions:[
+      { id:'body1', t:'Energy & vitality',      s:'How would you rate your daily energy and physical health right now?' },
+      { id:'body2', t:'Sleep & rest',           s:'How well are you sleeping and recovering each night?' },
+      { id:'body3', t:'Movement & body care',   s:'How regularly are you moving your body and caring for it?' } ] },
+  { key:'mind',   label:'MIND',   sub:'Intellectual Self', color:'#6090C9', cls:'dim-mind',
+    questions:[
+      { id:'mind1', t:'Mental clarity',         s:'How clear and focused is your thinking on a typical day?' },
+      { id:'mind2', t:'Learning & curiosity',   s:'How actively are you learning and growing intellectually?' },
+      { id:'mind3', t:'Decision-making',        s:'How confident and clear are you in making important decisions?' } ] },
+  { key:'wealth', label:'WEALTH', sub:'Material Self',     color:'#72B890', cls:'dim-wealth',
+    questions:[
+      { id:'wealth1', t:'Financial awareness',  s:'How conscious and informed are you about your money and finances?' },
+      { id:'wealth2', t:'Ambition & direction', s:'How clear is your direction toward your material or career goals?' },
+      { id:'wealth3', t:'Resource management',  s:'How effectively are you using the resources and time you have?' } ] },
+  { key:'spirit', label:'SPIRIT', sub:'Purposeful Self',   color:'#C9A84C', cls:'dim-spirit',
+    questions:[
+      { id:'spirit1', t:'Values alignment',     s:'How well are your daily actions aligned with what you truly value?' },
+      { id:'spirit2', t:'Sense of purpose',     s:'How clearly do you feel a sense of meaning or direction in life?' },
+      { id:'spirit3', t:'Emotional connection', s:'How connected do you feel to yourself, others, and what matters?' } ] }
+];
+
+/* ---------- analysis text: 4 bands per pillar ---------- */
+const BANDS = [
+  { name:'Depleted', min:3,  max:11 },
+  { name:'Strained', min:12, max:17 },
+  { name:'Steady',   min:18, max:23 },
+  { name:'Strong',   min:24, max:30 }
+];
+function bandOf(score){ return BANDS.find(b => score >= b.min && score <= b.max) || BANDS[0]; }
+
+const ANALYSIS = {
+  body:{
+    Depleted:"Your physical base is running on borrowed energy. At this level the body stops being a tool you use and becomes a limit you work around — late nights, skipped meals and no movement are quietly taxing your focus, mood and patience. Almost every other pillar will read low while this one is empty, so treat this as a physical problem, not a motivation problem.",
+    Strained:"Your body is holding, but with no margin. You can perform on a normal day, yet an exam week, an illness or two bad nights knocks you flat. The pattern here is usually irregularity rather than damage — sleep and meals that move by hours from day to day. Rhythm, not intensity, is what you are missing.",
+    Steady:"Your physical self is functioning well and is not blocking you. There is a real gap between fine and strong, and it usually sits in one specific habit — recovery, consistency of movement, or what you eat when you are busy. You have enough energy to build with; use it deliberately before it drains away.",
+    Strong:"Your body is currently an asset, not a constraint. High energy, decent recovery and regular movement give you a base most people your age do not have. The risk at this level is complacency during pressure periods. Protect the habit that is carrying this score, and use the surplus energy on your weaker pillars."
+  },
+  mind:{
+    Depleted:"Your thinking feels crowded. Low clarity, little deliberate learning and hesitant decisions usually point to input overload — constant scrolling, constant noise — rather than a lack of intelligence. A mind at this level cannot plan, so goals in other pillars keep failing for reasons that look like laziness but are actually mental fog.",
+    Strained:"You can think well in short bursts but you lose the thread easily. Focus arrives late and leaves early, learning happens mostly under deadline pressure, and decisions get postponed until circumstances decide for you. What is missing is a protected block of undistracted time — your attention is being spent by other people's design.",
+    Steady:"Your mind is reliable. You learn, you decide, you concentrate when it matters. The next level is not more effort but more direction: right now your learning is probably reactive, driven by the syllabus or the algorithm. Choosing one subject to go deep in — and one method for making decisions — moves you from capable to sharp.",
+    Strong:"Clear thinking is one of your real strengths. You focus, you learn actively and you decide without agonising. Two cautions at this level: sharp minds often over-analyse feelings, and they often under-value bodies. Keep asking whether your clarity is serving something worth being clear about."
+  },
+  wealth:{
+    Depleted:"Your material life is currently unmanaged rather than poor. Money arrives and leaves without being watched, career direction is vague, and time is spent the same way. At your stage this is normal and it is also the fastest thing on this page to fix — awareness alone, with no extra income, changes this score within a month.",
+    Strained:"You have some awareness but no system. You roughly know where money goes, you have a rough sense of direction, but nothing is written down, so nothing compounds. Note that a low score here is rarely about how much you have — it is about how much of it you can see and steer.",
+    Steady:"You are reasonably conscious with money, time and direction. What separates steady from strong here is horizon: you are managing the current month while a stronger position needs a twelve-month view — a savings figure, a skill you are deliberately building, a target you can name.",
+    Strong:"You handle resources consciously and you know where you are heading. Direction plus discipline at your age compounds enormously. The honest question at this level is whose definition of success you are optimising for — check this score against your SPIRIT score before you accelerate any further."
+  },
+  spirit:{
+    Depleted:"There is a real gap between what you value and how your days actually run. Low meaning and weak connection are draining — this is the pillar that makes the other three feel pointless when it is empty. This is not about religion; it is about whether anything you do this week actually matters to you.",
+    Strained:"You have a sense of what matters but it is not reliably shaping your choices. You feel the misalignment mostly as low-grade restlessness or the feeling of performing a life rather than living one. Usually one specific compromise is responsible — a course, a relationship, a habit you already know about.",
+    Steady:"You have a working sense of purpose and reasonable connection to yourself and others. To deepen it, make it concrete: purpose held as a feeling fades, purpose written as a sentence and practised weekly holds. Name your three values in your own words and check your calendar against them.",
+    Strong:"Your inner compass is working. Your actions largely match your values, you feel connected, and you can say what your life is for. This makes you steady under pressure and, whether you intend it or not, an anchor for people around you. Guard it with a daily practice — this is the pillar that erodes silently when life gets busy."
+  }
+};
+
+const SUGGESTIONS = {
+  body:[
+    "Fix your wake-up time first, not your sleep time. Same alarm seven days — the body reorganises everything else around it.",
+    "No screen for the last 30 minutes before bed. Put the phone across the room, on charge, out of arm's reach.",
+    "Move 20 minutes daily and make it non-negotiable — a brisk walk counts. Consistency beats the gym you will not attend.",
+    "Eat a real breakfast within an hour of waking. Skipping it is what most 3 p.m. crashes actually are.",
+    "Drink water before tea or coffee each morning; most low-energy scores have some ordinary dehydration inside them."
+  ],
+  mind:[
+    "Take one 45-minute block each day with the phone in another room. Protected attention is the whole game.",
+    "Read 15 pages a day of something not on your syllabus. In 30 days that is a full book you chose.",
+    "Write decisions down before you make them: the options, what you actually want, what you fear. Clarity comes from the pen.",
+    "Teach one thing you learned this week to someone else — explaining out loud exposes what you only half understand.",
+    "Cut your feed deliberately for 30 days: unfollow ten accounts that leave you agitated and add three that leave you thinking."
+  ],
+  wealth:[
+    "Track every rupee for 30 days in your notes app. Do not budget yet — just see it. Awareness alone changes spending.",
+    "Save a fixed amount the day money arrives, however small. The habit matters far more than the amount right now.",
+    "Name your twelve-month target in one sentence — skill, savings figure or position — and write it where you see it daily.",
+    "Build one paid-market skill for 45 minutes, three times a week. In a year that is a second income, not a hobby.",
+    "Audit your time like money for one week. Time is the resource you are actually richest in and spend most carelessly."
+  ],
+  spirit:[
+    "Write your three core values in your own words, then check last week's calendar against them. The gap is your work.",
+    "Five minutes of silence each morning before the phone — breath, prayer or stillness, whichever fits you.",
+    "Journal three lines each night: what mattered today, what drained me, what I will carry into tomorrow.",
+    "Do one thing weekly that helps someone with no benefit to you. Meaning is built through action, not through thinking.",
+    "Name the one compromise you already know is out of line with your values, and set a date to end it."
+  ]
+};
+
+const TALK = {
+  body:"Ask your group: what is one physical habit each of you keeps promising yourself and never starts — and what is the smallest version of it you could actually do tomorrow?",
+  mind:"Ask your group: where does your attention actually go in a day? Compare screen-time numbers honestly, then each name one thing you will cut.",
+  wealth:"Ask your group: what would change in your choices if you knew exactly where your money and time went every week? Who in the group already tracks, and how?",
+  spirit:"Ask your group: what is one thing you do regularly that does not match what you say you value — and what would it cost you to stop?"
+};
+
+/* ---------- build the form ---------- */
+const qWrap = document.getElementById('questions');
+DIMS.forEach(dim => {
+  const sec = document.createElement('div');
+  sec.className = dim.cls;
+  let html = `<div class="section-title">${dim.label} — ${dim.sub}</div>`;
+  dim.questions.forEach(q => {
+    let scale = '';
+    for (let i = 1; i <= 10; i++) {
+      scale += `<input type="radio" name="${q.id}" id="${q.id}_${i}" value="${i}"><label for="${q.id}_${i}">${i}</label>`;
+    }
+    html += `<div class="q" id="q_${q.id}">
+        <div class="qh"><label class="title">${q.t}</label><div class="val sans" id="v_${q.id}">—</div></div>
+        <div class="sub">${q.s}</div>
+        <div class="scale">${scale}</div>
+        <div class="ends"><span>Very low</span><span>Excellent</span></div>
+      </div>`;
+  });
+  sec.innerHTML = html;
+  qWrap.appendChild(sec);
+});
+
+const ALL_Q = DIMS.flatMap(d => d.questions.map(q => q.id));
+const TEXT_FIELDS = ['userName','r1','r2','r3','strengths','values','interests','personality','skills',
+                     'actionBody','actionMind','actionWealth','actionSpirit'];
+
+/* ---------- state, autosave ---------- */
+const STORE = 'giri4d_v1';
+function save(){
+  const d = { scores:{}, text:{} };
+  ALL_Q.forEach(id => { const c = document.querySelector(`input[name="${id}"]:checked`); if (c) d.scores[id] = +c.value; });
+  TEXT_FIELDS.forEach(id => { const el = document.getElementById(id); if (el && el.value) d.text[id] = el.value; });
+  try { localStorage.setItem(STORE, JSON.stringify(d)); } catch(e){}
+}
+function restore(){
+  let d; try { d = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch(e){ return; }
+  if (!d) return;
+  Object.entries(d.scores || {}).forEach(([id,v]) => {
+    const el = document.getElementById(`${id}_${v}`);
+    if (el){ el.checked = true; document.getElementById('v_'+id).textContent = v + '/10'; }
+  });
+  Object.entries(d.text || {}).forEach(([id,v]) => { const el = document.getElementById(id); if (el) el.value = v; });
+  updateProgress();
+}
+document.addEventListener('change', e => {
+  if (e.target.type === 'radio'){
+    const lbl = document.getElementById('v_' + e.target.name);
+    if (lbl) lbl.textContent = e.target.value + '/10';
+    const box = document.getElementById('q_' + e.target.name);
+    if (box) box.classList.remove('miss');
+    updateProgress();
+  }
+  save();
+});
+document.addEventListener('input', e => { if (e.target.matches('textarea,input[type=text],.text-input,.action-item input')) save(); });
+
+function updateProgress(){
+  const n = ALL_Q.filter(id => document.querySelector(`input[name="${id}"]:checked`)).length;
+  document.getElementById('pText').textContent = `${n} / 12 answered`;
+  document.getElementById('pFill').style.width = (n/12*100) + '%';
+}
+
+/* ---------- gate ---------- */
+function unlock(){
+  const v = document.getElementById('pw').value.trim().toLowerCase();
+  if (v === PASS){
+    sessionStorage.setItem('giri4d_ok','1');
+    document.getElementById('gateScreen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    restore();
+  } else {
+    document.getElementById('pwErr').textContent = 'That password is not right. Ask the facilitator.';
+    document.getElementById('pw').value = '';
+  }
+}
+document.getElementById('pw').addEventListener('keydown', e => { if (e.key === 'Enter') unlock(); });
+if (sessionStorage.getItem('giri4d_ok') === '1'){
+  document.getElementById('gateScreen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  restore();
+}
+
+/* ---------- scoring ---------- */
+function dimScore(dim){
+  return dim.questions.reduce((t,q) => {
+    const c = document.querySelector(`input[name="${q.id}"]:checked`);
+    return t + (c ? +c.value : 0);
+  }, 0);
+}
+function qScore(id){
+  const c = document.querySelector(`input[name="${id}"]:checked`);
+  return c ? +c.value : 0;
+}
+
+/* ---------- radar ---------- */
+function drawRadar(vals){
+  const cx = 150, cy = 150, R = 100;
+  const ang = [-Math.PI/2, 0, Math.PI/2, Math.PI];   // top, right, bottom, left
+  const pt = (i, r) => [cx + Math.cos(ang[i])*r, cy + Math.sin(ang[i])*r];
+  let g = '';
+  [0.25,0.5,0.75,1].forEach(f => {
+    const p = ang.map((_,i) => pt(i, R*f).map(n => n.toFixed(1)).join(',')).join(' ');
+    g += `<polygon points="${p}" fill="none" stroke="#2E3D4A" stroke-width="1"/>`;
+  });
+  ang.forEach((_,i) => {
+    const [x,y] = pt(i,R);
+    g += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#2E3D4A" stroke-width="1"/>`;
+  });
+  const poly = DIMS.map((d,i) => pt(i, R * Math.max(vals[d.key],1)/30).map(n => n.toFixed(1)).join(',')).join(' ');
+  g += `<polygon points="${poly}" fill="rgba(26,155,166,.28)" stroke="#1A9BA6" stroke-width="2"/>`;
+  DIMS.forEach((d,i) => {
+    const [x,y] = pt(i, R * Math.max(vals[d.key],1)/30);
+    g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.5" fill="${d.color}"/>`;
+    // labels kept inside the viewBox: side labels anchor to the edges
+    const lab = [ {x:cx,   y:cy-R-16, a:'middle'},   // BODY   (top)
+                  {x:296,  y:cy+4,    a:'end'},      // MIND   (right)
+                  {x:cx,   y:cy+R+24, a:'middle'},   // WEALTH (bottom)
+                  {x:4,    y:cy+4,    a:'start'} ][i];
+    g += `<text x="${lab.x}" y="${lab.y}" fill="${d.color}" font-size="11"
+           font-family="Arial" letter-spacing="1.5" text-anchor="${lab.a}">${d.label}</text>`;
+  });
+  document.getElementById('radar').innerHTML = g;
+}
+
+/* ---------- results ---------- */
+function showResults(){
+  const missing = ALL_Q.filter(id => !document.querySelector(`input[name="${id}"]:checked`));
+  if (missing.length){
+    missing.forEach(id => document.getElementById('q_'+id).classList.add('miss'));
+    document.getElementById('formNote').innerHTML =
+      `<span style="color:var(--body)">${missing.length} question${missing.length>1?'s':''} still unanswered — marked in red.</span>`;
+    document.getElementById('q_'+missing[0]).scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+
+  const vals = {}; DIMS.forEach(d => vals[d.key] = dimScore(d));
+  const sorted = [...DIMS].sort((a,b) => vals[a.key] - vals[b.key]);
+  const weakest = sorted[0], strongest = sorted[sorted.length-1];
+  const total = DIMS.reduce((t,d) => t + vals[d.key], 0);
+  const spread = vals[strongest.key] - vals[weakest.key];
+
+  const name = (document.getElementById('userName').value || '').trim();
+  document.getElementById('resTitle').textContent = name ? `${name} — your 4D Self Profile` : 'Your 4D Self Profile';
+  document.getElementById('resDate').textContent =
+    new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}) +
+    ' · GIRI 4D Self Framework';
+
+  drawRadar(vals);
+
+  document.getElementById('scoreDisplay').innerHTML = DIMS.map(d => {
+    const pct = Math.round(vals[d.key]/30*100);
+    return `<div class="score-bar">
+      <div class="lab"><b style="color:${d.color}">${d.label}</b><span>${vals[d.key]} / 30 · ${bandOf(vals[d.key]).name}</span></div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${d.color}"></div></div>
+    </div>`;
+  }).join('');
+  document.getElementById('totalLine').textContent =
+    `Overall 4D total: ${total} / 120 · average ${(total/4).toFixed(1)} per pillar`;
+
+  /* growth edge */
+  const tie = DIMS.filter(d => vals[d.key] === vals[weakest.key]);
+  const low = vals[weakest.key], band = bandOf(low).name.toLowerCase();
+  const edgeText =
+    tie.length === 1
+      ? `${weakest.label} scored lowest at <b>${low}/30</b> (${band}). This is where the same effort buys you the most change. Start here for the next 30 days.`
+    : tie.length === 4
+      ? `All four pillars are level at <b>${low}/30</b> (${band}), so no single pillar is dragging. Choose the one whose improvement would make the other three easier, and give it the next 30 days.`
+      : `${tie.length === 2 ? 'Two' : 'Three'} pillars are tied at <b>${low}/30</b> (${band}). Pick the one that, if it improved, would make the others easier — and start there for the next 30 days.`;
+  document.getElementById('growthEdge').innerHTML = `
+    <div class="tag">Your growth edge</div>
+    <div class="big" style="color:${weakest.color}">${tie.length>1 ? tie.map(d=>d.label).join(' · ') : weakest.label}</div>
+    <p>${edgeText}</p>`;
+
+  /* narrative read-out */
+  const lowestQ = ALL_Q.map(id => ({id, v:qScore(id)})).sort((a,b) => a.v - b.v)[0];
+  const lowestQMeta = DIMS.flatMap(d => d.questions.map(q => ({...q, dim:d}))).find(q => q.id === lowestQ.id);
+  const balance = spread <= 4
+    ? `Your four pillars are within ${spread} points of each other — a balanced profile. Balanced does not mean finished: your whole self is operating at roughly the same level, so lifting one pillar deliberately will pull the others up with it.`
+    : spread <= 9
+    ? `There is a ${spread}-point spread between ${strongest.label} and ${weakest.label}. That is a normal, workable imbalance — you have a clear strength to lean on and a clear place to work.`
+    : `There is a ${spread}-point gap between ${strongest.label} (${vals[strongest.key]}/30) and ${weakest.label} (${vals[weakest.key]}/30). That is a lopsided profile. A strong pillar cannot compensate for a collapsed one for long — people in this pattern usually keep investing in what already works while the weak pillar quietly sets the ceiling on everything else.`;
+
+  document.getElementById('readOut').innerHTML = `
+    <p><b style="color:${strongest.color}">Your strongest pillar is ${strongest.label}</b> at ${vals[strongest.key]}/30.
+       Treat it as leverage, not as a trophy — the habits that made this pillar strong are the same habits you can
+       transplant into ${weakest.label}.</p>
+    <p>${balance}</p>
+    <p><b>Your single weakest signal</b> is “${lowestQMeta.t}” under ${lowestQMeta.dim.label}, at ${lowestQ.v}/10.
+       Of all twelve answers this is the most specific thing you can act on this week — it is small enough to actually change.</p>
+    <p class="sans" style="font-size:13px;color:var(--dim)">Read this as a snapshot of one moment in your life, not a verdict on
+       who you are. A score you dislike is information, and information is the only thing you can act on.</p>`;
+
+  /* pillar cards */
+  document.getElementById('pillars').innerHTML = sorted.map((d, idx) => {
+    const sc = vals[d.key], band = bandOf(sc).name;
+    const isEdge = idx === 0;
+    const sugg = SUGGESTIONS[d.key];
+    const lead = isEdge
+      ? 'Start here — first two are your highest-return actions'
+      : (sc >= 24 ? 'Keep this pillar strong' : 'To move up one band');
+    const items = (isEdge || sc < 18 ? sugg : sugg.slice(0,3))
+      .map((s,i) => `<li${isEdge && i < 2 ? ' style="color:'+d.color+'"' : ''}>${s}</li>`).join('');
+    return `<details class="pillar" ${isEdge ? 'open' : ''}>
+      <summary><span class="nm" style="color:${d.color}">${d.label} — ${d.sub}</span>
+               <span class="sc">${sc}/30${isEdge ? ' · growth edge' : ''}</span></summary>
+      <div class="body">
+        <div class="band" style="color:${d.color}">${band}</div>
+        <p>${ANALYSIS[d.key][band]}</p>
+        <div class="lead">${lead}</div>
+        <ul>${items}</ul>
+      </div>
+    </details>`;
+  }).join('');
+
+  /* discussion questions */
+  document.getElementById('talkList').innerHTML = [
+    `<b>${TALK[weakest.key]}</b>`,
+    `Which pillar did your table collectively score lowest? Why might a whole group of students share the same weak pillar?`,
+    `Was your lowest score a surprise, or something you already knew and had been avoiding? What made it easier to admit on paper?`,
+    `Where did you feel tempted to score yourself higher than the truth — and what does that tell you about what you want to be seen as?`,
+    `Whose 30-day action in your group sounds most achievable? Steal the structure of it for your own.`,
+    `Pick a date three weeks from today. Who in this circle will message you to ask whether you kept your commitment?`
+  ].map(t => `<li>${t}</li>`).join('');
+
+  document.getElementById('formScreen').classList.add('hidden');
+  document.getElementById('resultsScreen').classList.remove('hidden');
+  document.getElementById('progress').classList.add('hidden');
+  window.scrollTo({top:0, behavior:'smooth'});
+  save();
+}
+
+function backToForm(){
+  document.getElementById('resultsScreen').classList.add('hidden');
+  document.getElementById('formScreen').classList.remove('hidden');
+  document.getElementById('progress').classList.remove('hidden');
+  window.scrollTo({top:0});
+}
+
+/* ---------- export ---------- */
+function profileObject(){
+  const vals = {}; DIMS.forEach(d => vals[d.key] = dimScore(d));
+  const sorted = [...DIMS].sort((a,b) => vals[a.key] - vals[b.key]);
+  return {
+    name: document.getElementById('userName').value || 'Anonymous',
+    date: new Date().toISOString(),
+    framework: '4D Self Framework — GIRI, Er. Anup KC',
+    scores: vals,
+    perQuestion: Object.fromEntries(ALL_Q.map(id => [id, qScore(id)])),
+    total: Object.values(vals).reduce((a,b)=>a+b,0),
+    growthEdge: sorted[0].label,
+    strongest: sorted[3].label,
+    openingReflection: {
+      whoAmI: document.getElementById('r1').value,
+      valueMost: document.getElementById('r2').value,
+      lightsMeUp: document.getElementById('r3').value },
+    fiveLenses: {
+      strengths: document.getElementById('strengths').value,
+      values: document.getElementById('values').value,
+      interests: document.getElementById('interests').value,
+      personality: document.getElementById('personality').value,
+      skills: document.getElementById('skills').value },
+    actionMap: {
+      body: document.getElementById('actionBody').value,
+      mind: document.getElementById('actionMind').value,
+      wealth: document.getElementById('actionWealth').value,
+      spirit: document.getElementById('actionSpirit').value }
+  };
+}
+
+function saveProfile(){
+  const p = profileObject();
+  const blob = new Blob([JSON.stringify(p, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `4D_Profile_${p.name.replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+}
+
+function copySummary(){
+  const p = profileObject();
+  const txt =
+`4D SELF-ASSESSMENT — ${p.name}
+GIRI · Knowing Your Personal Self
+
+BODY   ${p.scores.body}/30
+MIND   ${p.scores.mind}/30
+WEALTH ${p.scores.wealth}/30
+SPIRIT ${p.scores.spirit}/30
+Total  ${p.total}/120
+
+Growth edge: ${p.growthEdge}
+Strongest:   ${p.strongest}
+
+My 30-day actions
+BODY:   ${p.actionMap.body || '—'}
+MIND:   ${p.actionMap.mind || '—'}
+WEALTH: ${p.actionMap.wealth || '—'}
+SPIRIT: ${p.actionMap.spirit || '—'}`;
+  const done = () => { document.getElementById('copyNote').textContent = 'Summary copied — paste it in your group chat.'; };
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done, () => fallback(txt, done));
+  } else fallback(txt, done);
+}
+function fallback(txt, done){
+  const ta = document.createElement('textarea');
+  ta.value = txt; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); done(); } catch(e){
+    document.getElementById('copyNote').textContent = 'Copy failed — use Download JSON instead.';
+  }
+  document.body.removeChild(ta);
+}
+</script>
+</body>
+</html>
